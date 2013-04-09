@@ -1,42 +1,63 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-var app = {
-    initialize: function() {
-        this.bind();
-    },
-    bind: function() {
-        document.addEventListener('deviceready', this.deviceready, false);
-    },
-    deviceready: function() {
-        // This is an event handler function, which means the scope is the event.
-        // So, we must explicitly called `app.report()` instead of `this.report()`.
-        app.report('deviceready');
-    },
-    report: function(id) {
-        // Report the event in the console
-        console.log("Report: " + id);
-
-        // Toggle the state from "pending" to "complete" for the reported ID.
-        // Accomplished by adding .hide to the pending element and removing
-        // .hide from the complete element.
-        document.querySelector('#' + id + ' .pending').className += ' hide';
-        var completeElem = document.querySelector('#' + id + ' .complete');
-        completeElem.className = completeElem.className.split('hide').join('');
+/*globals require */
+require.config({
+    paths: {
+        "meems": "./lib/meems.min",
+        "view": "./view",
+        "viewmodel": "./viewmodel"
     }
-};
+});
+function loadCss(urls) {
+    "use strict";
+
+    var link,
+        head = document.getElementsByTagName("head")[0],
+        firstSibling = head.childNodes[0];
+
+    for (var i = 0, ln = urls.length; i < ln; ++i) {
+        link = document.createElement("link");
+        link.type = "text/css";
+        link.rel = "stylesheet";
+        link.href = urls[i];
+        head.insertBefore(link, firstSibling);
+    }
+}
+
+function getTheme() {
+    "use strict";
+
+    var m;
+
+    if ((m = /theme=(\w+)/.exec(window.location.search))) {
+        return m[1];
+    }
+
+    return null;
+}
+
+var cssPath = "css/meems/";
+var theme = getTheme() || 'android';
+loadCss([
+    cssPath + theme + "/ui.css",
+    cssPath + theme + "/icons.css",
+    cssPath + theme + "/effects.css"
+]);
+
+require([
+    "meems",
+    /* Views */
+    "view/phone",
+    /* ViewModels */
+    "viewmodel/phone"],
+function (Meems, PhoneUI, PhoneViewModel) {
+    "use strict";
+
+    var Utils = Meems.Utils, Scroll = Meems.Scroll, Events = Meems.Events;
+
+    var phoneUi = new PhoneUI();
+    PhoneViewModel.init(phoneUi);
+    phoneUi.refresh();
+
+    Events.Dom.on(window, 'resize', Utils.Fn.throttle(Scroll.updateAll, 100));
+    document.body.appendChild(phoneUi.ui.el());
+    Scroll.updateAll();
+});
