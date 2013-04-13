@@ -1,0 +1,13 @@
+{
+    "name": "rss-reader-server",
+    "description": "REST web service to support the RSS reader demo",
+    "version":  "0.0.1",
+    "private": true,
+    "dependencies": {
+        "express": "3.x",
+        "mongodb": "1.2.x",
+        "crypto": "0.0.3",
+        "feedparser": "0.15.0",
+        "request": "2.16.6"
+    }
+}
