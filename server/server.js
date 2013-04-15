@@ -3,11 +3,30 @@ var express = require('express'),
     feeds = require('./feeds'),
     app = express();
 
+var allowCrossDomain = function (req, res, next) {
+    "use strict";
+    res.header("Access-Control-Allow-Origin", req.header("Origin"));
+    res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+    res.header("Access-Control-Allow-Headers", "Content-Type");
+    res.header("Access-Control-Allow-Credentials", "true");
+
+    next();
+};
+
 app.use(express.cookieParser());
 app.use(express.bodyParser());
 app.use(express.cookieSession({
     secret: 'ma-secret'
 }));
+app.use(allowCrossDomain);
+
+/*
+ * Respond to OPTIONS (HTTP Access Control)
+ */
+app.options("/*", function (req, res, next) {
+    "use strict";
+    res.send(200);
+});
 
 /*
  * Login a user
@@ -92,6 +111,7 @@ app.delete("/feeds/:id", user.protect(feeds.remove));
  * id - The ID of the RSS feed to fetch news of.
  */
 app.get("/feeds/:id", user.protect(feeds.getFeedNews));
+
 
 app.listen(9999);
 console.log("Listening on port 9999...");
