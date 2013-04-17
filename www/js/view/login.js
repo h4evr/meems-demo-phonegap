@@ -24,7 +24,7 @@ define(["meems"], function(Meems) {
                                     }))))
                 .facet("content",
                     UI.create("form")
-                        .addField(UI.create("textfield").attr("label", "Email").value(username))
+                        .addField(UI.create("textfield").attr("label", "Email").attr("type", "email").value(username))
                         .addField(UI.create("textfield").attr("label", "Password").attr("type", "password").value(password)));
 
         this.ui = pageLogin;

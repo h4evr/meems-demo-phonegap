@@ -3,7 +3,8 @@
     paths: {
         "meems": "./js/lib/meems.min",
         "view": "./js/view",
-        "viewmodel": "./js/viewmodel"
+        "viewmodel": "./js/viewmodel",
+        "server_conf": "./js/server_conf"
     },
     name: "../tools/almond",
     out: "../www/js/index.min.js",

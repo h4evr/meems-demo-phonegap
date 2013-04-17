@@ -3,10 +3,26 @@ var mongo = require('mongodb'),
     Db = mongo.Db,
     BSON = mongo.BSONPure;
 
-var server = new Server('ds039427.mongolab.com', 39427, { auto_reconnect: true }),
-    db = new Db('rssreader', server, { w: 1}),
-    user = 'rssreader',
-    pass = 'rssreader123',
+var serverData;
+
+if (process.env.VCAP_SERVICES) {
+    var env = JSON.parse(process.env.VCAP_SERVICES);
+    serverData = env['mongodb-1.8'][0]['credentials'];
+} else {
+    serverData = {
+        "hostname":"ds039427.mongolab.com",
+        "port":39427,
+        "username":"rssreader",
+        "password":"rssreader123",
+        "name":"",
+        "db":"rssreader"
+    };
+}
+
+var server = new Server(serverData.hostname, serverData.port, { auto_reconnect: true }),
+    db = new Db(serverData.db, server, { w: 1}),
+    user = serverData.username,
+    pass = serverData.password,
     status = 0,
     callbacks = [];
 

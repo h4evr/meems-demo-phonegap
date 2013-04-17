@@ -1,3 +1,3 @@
 define({
-    url: "http://localhost:9999/"
+    url: "http://rssreaderserver.eu01.aws.af.cm/"
 });
