@@ -21,6 +21,11 @@
     -webkit-text-size-adjust: none;             /* prevent webkit from resizing text to fit */
     -webkit-tap-highlight-color: rgba(0,0,0,0); /* make transparent link selection, adjust last value opacity 0 to 1.0 */
     -webkit-user-select: none;                  /* prevent copy paste, to allow, change 'none' to 'text' */
+
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 .feed .icon {
@@ -47,10 +52,20 @@
 }
 
 .news .summary {
+    margin-top: 25px;
     font-size: 15px;
+    clear: both;
 }
 
 .news .summary img {
+    max-width: 80%;
+}
+
+.news .summary br {
+    display: none;
+}
+
+.news .summary .mf-viral {
     display: none;
 }
 
@@ -58,8 +73,22 @@
     margin: 10px 10px;
 }
 
+.news .date {
+    float: right;
+    font-size: 14px;
+}
+
+.news .author {
+    float: left;
+    font-size: 14px;
+}
+
 .clear {
     clear: both;
+}
+
+a {
+    color: #ffffff;
 }
 
 .news-details {

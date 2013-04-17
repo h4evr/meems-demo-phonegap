@@ -7,7 +7,7 @@ define([
 
         showNews : function (feed, news) {
             this.news = news;
-            this.view.title(feed.title);
+            this.view.title(feed.name);
             this.view.news(this.news);
         },
 

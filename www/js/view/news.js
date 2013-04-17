@@ -6,7 +6,9 @@ define(["meems"], function(Meems) {
         var itemTemplate =
             "<div class=\"news\">" +
                 "<div class=\"title\">{{title}}</div>" +
-                "<div class=\"summary\">{{&summary.content}}</div>" +
+                "<div class=\"date\">{{formattedDate}}</div>" +
+                "<div class=\"author\">{{author}}</div>" +
+                "<div class=\"summary\">{{&summary}}</div>" +
                 "<div class=\"clear\"></div>" +
             "</div>";
 
@@ -35,7 +37,7 @@ define(["meems"], function(Meems) {
                         .items(news)
                         .template(itemTemplate)
                         .attr('style', 'normal')
-                        .attr('sortable', true)
+                        .attr('sortable', false)
                         .on("item:clicked", function (eventName, item) {
                             pageNews.fire("news:clicked", item);
                             return true;

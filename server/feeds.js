@@ -7,7 +7,7 @@ exports.get = function (req, res) {
 
     db.collection('feeds', function (err, collection) {
         if (!err) {
-            collection.find({'owner': email}).toArray(function (err, items) {
+            collection.find({'owner': email}).sort('order').toArray(function (err, items) {
                 res.send(err || items);
             });
         } else {
@@ -21,24 +21,58 @@ exports.subscribe = function (req, res) {
     var feed = req.body,
         email = req.session.email;
 
-    getFeedMeta(feed.url, function (err, meta) {
-        if (err)  {
-            res.send(500, err);
-        } else {
-            feed.name = meta.title;
-            feed.owner = email;
+    var addFeed = function (feed, callback) {
+        getFeedMeta(feed.url, function (err, meta) {
+            if (err)  {
+                res.send(500, err);
+            } else {
+                feed.name = meta.title;
+                feed.owner = email;
 
-            db.collection('feeds', function (err, collection) {
-                if (err) {
-                    res.send(err);
-                } else {
-                    collection.insert(feed, { safe : true }, function (err, result) {
-                        res.send(err || result[0]);
+                db.collection('feeds', function (err, collection) {
+                    if (err) {
+                        res.send(500, err);
+                    } else {
+                        collection.insert(feed, { safe : true }, function (err, result) {
+                            if (err) {
+                                res.send(500, err);
+                            } else {
+                                callback(result[0]);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    };
+
+    if (feed) {
+        if (feed.length !== undefined) {
+            if (feed.length === 0) {
+                res.send(200, []);
+            } else {
+                var newFeeds = [];
+
+                var recursive = function (i) {
+                    if (i >= feed.length) {
+                        res.send(200, newFeeds);
+                        return;
+                    }
+
+                    addFeed(feed[i], function (newFeed) {
+                        newFeeds.push(newFeed);
+                        recursive(i + 1);
                     });
-                }
+                };
+
+                recursive(0);
+            }
+        } else {
+            addFeed(feed, function (newFeed) {
+                res.send(200, newFeed);
             });
         }
-    });
+    }
 };
 
 exports.update = function (req, res) {
@@ -59,6 +93,43 @@ exports.update = function (req, res) {
     });
 };
 
+exports.updateAll = function (req, res) {
+    var feeds = req.body,
+        email = req.session.email;
+
+    if (!feeds || feeds.length === 0) {
+        res.send(200);
+        return;
+    }
+
+    db.collection('feeds', function (err, collection) {
+        if (err) {
+            res.send(err);
+        } else {
+            var updateFeed = function (i) {
+                if (i >= feeds.length) {
+                    res.send(200);
+                    return;
+                }
+
+                var feed = feeds[i], id = feed._id;
+                feed.owner = email;
+                delete feed._id;
+
+                collection.update({'_id' : new Db.BSON.ObjectID(id), 'owner' : email }, feed, { safe : true }, function (err) {
+                    if (err) {
+                        res.send(500, err);
+                    } else {
+                        updateFeed(i + 1);
+                    }
+                });
+            };
+
+            updateFeed(0);
+        }
+    });
+};
+
 exports.remove = function (req, res) {
     var id = req.params.id,
         email = req.session.email;
@@ -68,6 +139,32 @@ exports.remove = function (req, res) {
             res.send(err);
         } else {
             collection.remove({'_id' : new Db.BSON.ObjectID(id), 'owner' : email }, { safe : true }, function (err) {
+                res.send(err || req.body);
+            });
+        }
+    });
+};
+
+exports.removeAll = function (req, res) {
+    var feeds = req.body,
+        email = req.session.email;
+
+    if (!feeds || feeds.length === 0) {
+        res.send(200);
+        return;
+    }
+
+    var ids = [];
+
+    for (var i = 0, len = feeds.length; i < len; ++i) {
+        ids.push(new Db.BSON.ObjectID(feeds[i]._id));
+    }
+
+    db.collection('feeds', function (err, collection) {
+        if (err) {
+            res.send(err);
+        } else {
+            collection.remove({'_id' : { '$in' : ids }, 'owner' : email }, { safe : true }, function (err) {
                 res.send(err || req.body);
             });
         }
@@ -96,11 +193,17 @@ exports.getFeedNews = function (req, res) {
                                     console.log(err);
                                     res.send(500, err);
                                 } else {
-                                    res.send(news);
+                                    res.send({
+                                        feed: feed,
+                                        news: news
+                                    });
                                 }
                             });
                         } else {
-                            res.send(news);
+                            res.send({
+                                feed: feed,
+                                news: news
+                            });
                         }
                     });
                 }

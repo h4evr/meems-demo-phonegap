@@ -7,7 +7,8 @@ define(["meems"], function(Meems) {
                 "<div class=\"icon\">" +
                     "<img src=\"{{icon}}\">" +
                 "</div>" +
-                "<div class=\"name\">{{title}}</div>" +
+                "<div class=\"name\">{{name}}</div>" +
+                "<div class=\"summary\">{{summary}}</div>" +
                 "<div class=\"clear\"></div>" +
             "</div>",
             manageItemTemplate =
@@ -15,7 +16,7 @@ define(["meems"], function(Meems) {
                 "<div class=\"icon\">" +
                     "<img src=\"{{icon}}\">" +
                 "</div>" +
-                "<div class=\"name\">{{title}}</div></td><td width=\"30px\">" +
+                "<div class=\"name\">{{name}}</div></td><td width=\"30px\">" +
                 "<div class=\"ui-button ui-button-normal ui-button-red remove\">" +
                     "<div class=\"ui-icon ui-icon-delete\"></div>" +
                     "<div class=\"ui-title\">Delete</div>" +
@@ -23,11 +24,12 @@ define(["meems"], function(Meems) {
             "</div></tr></table><div class=\"clear\"></div>";
 
         var feeds = Obs.observableArray([]),
+            tempFeeds = Obs.observableArray([]),
             title = "Feeds",
 
             feedsList = UI.create("list")
                 /* Bind to an observable array. */
-                .items(feeds)
+                .items(tempFeeds)
                 .template(itemTemplate)
                 .attr('style', 'normal')
                 .attr('sortable', true)
@@ -52,7 +54,7 @@ define(["meems"], function(Meems) {
                     var action = button.attr("action");
 
                     if (action === 'delete') {
-                        feeds.removeAll(feedsList.getSelectedItems());
+                        tempFeeds.removeAll(feedsList.getSelectedItems());
                         feedsList.update();
                         Utils.Dom.applyChanges();
                     }
@@ -72,6 +74,7 @@ define(["meems"], function(Meems) {
                                     .attr("title", "Manage")
                                     .attr("icon", "add")
                                     .on('dom:' + Events.Touch.touchEndEventName, function () {
+                                        pageFeeds.fire("feeds:manage");
                                         pageHolder.currentPage(pageManageFeeds);
                                         Utils.Dom.applyChanges();
                                     }))))
@@ -89,11 +92,11 @@ define(["meems"], function(Meems) {
                         })),
 
             newUrl = Obs.observable(""),
-            switchVal = Obs.observable(false),
+            /*switchVal = Obs.observable(false),
             switchVal2 = Obs.observable(true),
             switchVal3 = Obs.observable(false),
             sliderVal = Obs.observable(50),
-            sliderVal2 = Obs.observable(125),
+            sliderVal2 = Obs.observable(125),*/
 
             pageManageFeeds =
             UI.create("page", pageHolder)
@@ -107,8 +110,25 @@ define(["meems"], function(Meems) {
                                     .attr("title", "Back")
                                     .attr("icon", "back")
                                     .on('dom:' + Events.Touch.touchEndEventName, function () {
-                                        pageHolder.currentPage(pageFeeds);
-                                        Utils.Dom.applyChanges();
+                                        pageManageFeeds.fire("feeds:cancel", function (goBack) {
+                                            if (goBack) {
+                                                pageHolder.currentPage(pageFeeds);
+                                                Utils.Dom.applyChanges();
+                                            }
+                                        });
+                                    })))
+                        .facet("buttonsright",
+                            UI.create("buttongroup")
+                                .addButton(UI.create("button")
+                                    .attr("title", "Save")
+                                    .attr("icon", "save")
+                                    .on('dom:' + Events.Touch.touchEndEventName, function () {
+                                        pageManageFeeds.fire("feeds:save", function (goBack) {
+                                            if (goBack) {
+                                                pageHolder.currentPage(pageFeeds);
+                                                Utils.Dom.applyChanges();
+                                            }
+                                        });
                                     }))))
                  /* Create the page's content */
                 .facet("content",
@@ -117,11 +137,11 @@ define(["meems"], function(Meems) {
                         .appendChild(
                             UI.create("form")
                                 .addField(UI.create("textfield").attr("label", "URL").value(newUrl))
-                                .addField(UI.create("switch").attr("label", "demo").value(switchVal))
+                                /*.addField(UI.create("switch").attr("label", "demo").value(switchVal))
                                 .addField(UI.create("switch").attr("label", "demo 2").value(switchVal2))
                                 .addField(UI.create("switch").attr("label", "demo 3").value(switchVal3))
                                 .addField(UI.create("slider").attr("label", "Volume").value(sliderVal).attr("minimum",0).attr("maximum",100))
-                                .addField(UI.create("slider").attr("label", "Volume").value(sliderVal2).attr("minimum",100).attr("maximum",200))
+                                .addField(UI.create("slider").attr("label", "Volume").value(sliderVal2).attr("minimum",100).attr("maximum",200))*/
                         )
                         .appendChild(UI.create("button").attr("title", "Add")
                             .on("dom:" + Events.Touch.touchEndEventName, function () {
@@ -138,6 +158,7 @@ define(["meems"], function(Meems) {
 
         this.ui = pageHolder;
         this.feeds = feeds;
+        this.tempFeeds = tempFeeds;
 
         return this;
     }

@@ -3,7 +3,8 @@ require.config({
     paths: {
         "meems": "./lib/meems.min",
         "view": "./view",
-        "viewmodel": "./viewmodel"
+        "viewmodel": "./viewmodel",
+        "server_conf": "./server_conf"
     }
 });
 function loadCss(urls) {

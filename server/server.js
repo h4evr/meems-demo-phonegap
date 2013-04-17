@@ -95,6 +95,17 @@ app.post("/feeds", user.protect(feeds.subscribe));
 app.put("/feeds/:id", user.protect(feeds.update));
 
 /*
+ * Updates a feed.
+ * Route: /feeds/:id
+ * Method: PUT
+ * Expects JSON object with:
+ * id - ID of the feed to update.
+ * url - The URL of the RSS feed.
+ * name - The name of the feed.
+ */
+app.put("/feeds", user.protect(feeds.updateAll));
+
+/*
  * Remove a feeds.
  * Route: /feeds/:id
  * Method: DELETE
@@ -102,6 +113,15 @@ app.put("/feeds/:id", user.protect(feeds.update));
  * id - ID of the feed to delete.
  */
 app.delete("/feeds/:id", user.protect(feeds.remove));
+
+/*
+ * Remove a feeds.
+ * Route: /feeds/:id
+ * Method: DELETE
+ * Expects JSON object with:
+ * id - ID of the feed to delete.
+ */
+app.delete("/feeds", user.protect(feeds.removeAll));
 
 /*
  * Returns the latest news since last invocation.

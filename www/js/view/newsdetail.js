@@ -4,7 +4,7 @@ define([ "meems" ], function(Meems) {
 
     function NewsDetailView(parentView) {
         var pageTemplate =
-            "<iframe class=\"news-details\" src=\"{{link.href}}\"></iframe>";
+            "<iframe class=\"news-details\" src=\"{{link}}\"></iframe>";
 
         var news = Obs.observable(),
             title = Obs.observable("Feed title"),

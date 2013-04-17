@@ -1,61 +1,184 @@
 /*global define*/
 define([
-    "viewmodel/news"
-], function (NewsViewModel) {
-    var $feedsLoading = {};
+    "meems",
+    "viewmodel/news",
+    "server_conf"
+], function (Meems, NewsViewModel, ServerConf) {
+    var Utils = Meems.Utils;
+
+    var dateFormat = "dd/MM/yyyy hh:mm:ss";
+
+    var formatDate = function (date) {
+        var d = date.getDate(),
+            M = date.getMonth() + 1,
+            y = date.getFullYear(),
+            h = date.getHours(),
+            m = date.getMinutes(),
+            s = date.getSeconds();
+
+        return dateFormat.replace("dd", d < 10 ? "0" + d.toString() : d.toString())
+                         .replace("MM", M < 10 ? "0" + M.toString() : M.toString())
+                         .replace("yyyy", y.toString())
+                         .replace("hh", h < 10 ? "0" + h.toString() : h.toString())
+                         .replace("mm", m < 10 ? "0" + m.toString() : m.toString())
+                         .replace("ss", s < 10 ? "0" + s.toString() : s.toString())
+                         .replace("d", d.toString()).replace("M", M.toString()).replace("yy", y.toString().substr(2))
+                         .replace("h", h.toString()).replace("m", m.toString()).replace("s", s.toString());
+    };
 
     return  {
         feeds: null,
+        tempFeeds: null,
 
         newsCache: {},
 
-        loadFeeds : function() {
-            if (window.localStorage) {
-                var feedList = window.localStorage.getItem("feeds");
-                if (feedList) {
-                    this.feeds(JSON.parse(feedList));
-                } else {
-                    this.feeds([]);
-                }
-            }
+        loadFeeds : function (cb) {
+            Utils.Ajax.request({
+                url: ServerConf.url + 'feeds',
+                decoding: 'json',
+                method: "GET",
+
+                done: Utils.Fn.bind(function (resp) {
+                    if (resp.statusCode === 200) {
+                        this.feeds(resp.response);
+                        if (cb) {
+                            cb();
+                        }
+                    } else if (resp.statusCode === 403) {
+                        this.parentController.navigateTo("login");
+                    } else {
+                        alert("An error occurred, please try again later.");
+                    }
+                }, this)
+            });
         },
 
-        saveFeeds : function() {
-            if (window.localStorage) {
-                var feedList = JSON.stringify(this.feeds());
-                window.localStorage.setItem("feeds", feedList);
-            }
-        },
+        saveFeeds : function (cb) {
+            var feeds = this.feeds(),
+                newFeeds = this.tempFeeds(),
+                feed,
+                pos, i, len;
 
-        onFeedLoad: function (data) {
-            var url = data.query.meta.url.id || '';
+            var feedsToAdd = [],
+                feedsToRemove = [],
+                feedsToUpdate = [];
 
-            if ($feedsLoading[url] !== undefined) {
-                var feedName = data.query.results.feed.title;
-                var lastUpdateDate = data.query.results.feed.date;
-                var news = data.query.results.feed.entry;
+            for (i = 0, len = feeds.length; i < len; ++i) {
+                feed = feeds[i];
+                pos = newFeeds.indexOf(feed);
 
-                var callback = $feedsLoading[url];
-                $feedsLoading[url] = null;
-                if (callback) {
-                    setTimeout(function () {
-                        callback(url, lastUpdateDate, news, feedName);
-                    }, 0);
+                if (pos === -1) {
+                    feedsToRemove.push(feed);
                 }
-            } else {
-                console.warn("[onFeedLoad] Received feed info but there is no one to collect! " + url);
             }
+
+            for (i = 0, len = newFeeds.length; i < len; ++i) {
+                feed = newFeeds[i];
+                pos = feeds.indexOf(feed);
+
+                if (pos === -1) {
+                    feed.order = i;
+                    feedsToAdd.push(feed);
+                } else if (pos !== i) {
+                    feed.order = i;
+                    feedsToUpdate.push(feed);
+                }
+            }
+
+            var removeFeeds = function (callback) {
+                if (feedsToRemove.length == 0) {
+                    callback();
+                    return;
+                }
+
+                Utils.Ajax.request({
+                    url: ServerConf.url + "feeds",
+                    method: "DELETE",
+                    format: "json",
+                    params: feedsToRemove,
+                    done: function (resp) {
+                        if (resp.statusCode === 200) {
+                            feedsToRemove = null;
+                            callback();
+                        }
+                    }
+                });
+            };
+
+            var updateFeeds = function (callback) {
+                if (feedsToUpdate.length == 0) {
+                    callback();
+                    return;
+                }
+
+                Utils.Ajax.request({
+                    url: ServerConf.url + "feeds",
+                    method: "PUT",
+                    format: "json",
+                    params: feedsToUpdate,
+                    done: function (resp) {
+                        if (resp.statusCode === 200) {
+                            feedsToUpdate = null;
+                            callback();
+                        }
+                    }
+                });
+            };
+
+            var addFeeds = function (callback) {
+                if (feedsToAdd.length == 0) {
+                    callback();
+                    return;
+                }
+
+                Utils.Ajax.request({
+                    url: ServerConf.url + "feeds",
+                    method: "POST",
+                    format: "json",
+                    params: feedsToAdd,
+                    done: function (resp) {
+                        if (resp.statusCode === 200) {
+                            feedsToAdd = null;
+                            callback();
+                        }
+                    }
+                });
+            };
+
+            var self = this;
+            removeFeeds(function () {
+                updateFeeds(function () {
+                    addFeeds(function () {
+                        self.loadFeeds(cb);
+                    });
+                });
+            });
+
+            this.tempFeeds([]);
         },
 
         getNewsFromFeed: function (feed, onDone) {
-            var yqlUrl = "http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20feednormalizer%20where%20url%3D'"
-                       + encodeURIComponent(feed.url) + "'%20and%20output%3D'atom_1.0'&format=json&diagnostics=true&callback=onFeedLoad";
+            Utils.Ajax.request({
+                url: ServerConf.url + 'feeds/' + feed._id,
+                decoding: 'json',
+                method: "GET",
 
-            $feedsLoading[feed.url] = onDone;
+                done: Utils.Fn.bind(function (resp) {
+                    if (resp.statusCode === 200) {
+                        var news = resp.response.news;
 
-            var script = document.createElement("script");
-            script.src = yqlUrl;
-            document.getElementsByTagName("head")[0].appendChild(script);
+                        for (var i = 0, len = news.length; i < len; ++i) {
+                            news[i].formattedDate = formatDate(new Date(news[i].date));
+                        }
+
+                        onDone(resp.response);
+                    } else if (resp.statusCode === 403) {
+                        this.parentController.navigateTo("login");
+                    } else {
+                        alert("An error occurred, please try again later.");
+                    }
+                }, this)
+            });
         },
 
         parentController: null,
@@ -64,24 +187,41 @@ define([
             this.parentController = parentController;
             this.view = view || this.view;
             this.feeds = this.view.feeds;
+            this.tempFeeds = this.view.tempFeeds;
 
             var self = this;
+
+            var newsCacheStr = window.localStorage["newsCache"];
+
+            if (!newsCacheStr) {
+                this.newsCache = {};
+            } else {
+                this.newsCache = JSON.parse(newsCacheStr);
+            }
 
             this.view.ui.on("feeds:clicked", function (eventName, feed) {
                 var cache = self.newsCache[feed.url];
 
                 if (cache && cache.news && cache.news.length > 0 &&
-                    cache.lastUpdateDate && cache.lastUpdateDate.getTime() - (new Date()).getTime() < 300000 /*5min*/) {
+                    cache.lastUpdateDate && (new Date(cache.lastUpdateDate)).getTime() - (new Date()).getTime() < 300000 /*5min*/) {
                     NewsViewModel.showNews(feed, cache.news);
                 } else {
-                    self.getNewsFromFeed(feed, function (url, lastUpdateDate, news, title) {
-                        self.newsCache[feed.url] = {
-                            title: title,
-                            news: news,
-                            lastUpdateDate: new Date(lastUpdateDate)
-                        };
+                    self.getNewsFromFeed(feed, function (resp) {
+                        var feedCache = self.newsCache[resp.feed.url];
 
-                        NewsViewModel.showNews(feed, news);
+                        if (!feedCache) {
+                            feedCache = self.newsCache[resp.feed.url] = {
+                                title: resp.feed.name,
+                                news: resp.news,
+                                lastUpdateDate: new Date()
+                            };
+                        } else {
+                            feedCache.news.unshift.apply(feedCache.news, resp.news);
+                        }
+
+                        window.localStorage.setItem("newsCache", JSON.stringify(self.newsCache));
+
+                        NewsViewModel.showNews(resp.feed, feedCache.news);
 
                         self.parentController.updateUi();
                     });
@@ -89,62 +229,33 @@ define([
 
                 self.parentController.navigateTo("news");
             }).on("feeds:add", function (eventName, url) {
-                var onDone = function (url, lastUpdateDate, news, title) {
-                    self.feeds.push({
-                        id: Math.random() * 1000000.0,
-                        title: title,
-                        url: url,
-                        unread: 0,
-                        read: {}
-                    });
+                self.tempFeeds.push({
+                    name: url,
+                    url: url
+                });
 
-                    if (news && lastUpdateDate) {
-                        self.newsCache[url] = {
-                            title: title,
-                            news: news,
-                            lastUpdateDate: new Date(lastUpdateDate)
-                        };
+                self.parentController.updateUi();
+            }).on("feeds:manage", function (eventName, cb) {
+                self.tempFeeds([]);
+                self.tempFeeds.push.apply(self.tempFeeds, self.feeds());
+
+                if (cb) {
+                    cb(true);
+                }
+            }).on("feeds:save", function (eventName, cb) {
+                self.saveFeeds(function () {
+                    if (cb) {
+                        cb(true);
                     }
-
-                    self.parentController.updateUi();
-                };
-
-                var cache = self.newsCache[url];
-
-                if (cache && cache.news && cache.news.length > 0) {
-                    onDone(url, null, null, cache.title);
-                } else {
-                    self.getNewsFromFeed({ url: url }, onDone);
+                });
+            }).on("feeds:cancel", function (eventName, cb) {
+                self.tempFeeds([]);
+                if (cb) {
+                    cb(true);
                 }
             });
 
             this.loadFeeds();
-
-            if (this.feeds().length == 0) {
-                this.feeds([
-                    {
-                        id: 1,
-                        title: "Público",
-                        url: "http://feeds.feedburner.com/PublicoRSS",
-                        unread: 0,
-                        read: {}
-                    },
-                    {
-                        id: 2,
-                        title: "RTP Notícias / Geral / Últimas",
-                        url: "http://www.rtp.pt/noticias/index.php?headline=204&visual=58",
-                        unread: 0,
-                        read: {}
-                    }
-                ]);
-            }
-
-            var self = this;
-            this.feeds.subscribe(function () {
-                self.saveFeeds();
-            });
-
-            window.onFeedLoad = this.onFeedLoad;
         }
     };
 });

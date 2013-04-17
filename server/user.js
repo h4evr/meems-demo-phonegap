@@ -111,13 +111,15 @@ exports.login = function (req, res) {
             collection.findOne({ "email": email }, function (err, user) {
                 if (err) {
                     res.send(500, err);
-                } else {
+                } else if (user) {
                     if (user.password === pass) {
                         req.session.email = email;
                         res.send({email: email});
                     } else {
-                        res.send(403, "Bad authentication");
+                        res.send(403, {err: "Bad authentication"});
                     }
+                } else {
+                    res.send(403, {err: "Bad authentication"});
                 }
             });
         }

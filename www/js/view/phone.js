@@ -1,7 +1,7 @@
 /*global define*/
 define([
-    "meems", "view/feeds", "view/news", "view/newsdetail"
-], function(Meems, FeedsView, NewsView, NewsDetailView) {
+    "meems", "view/login", "view/feeds", "view/news", "view/newsdetail"
+], function(Meems, LoginView, FeedsView, NewsView, NewsDetailView) {
     var UI = Meems.UI, Utils = Meems.Utils, Obs = Meems.Observable;
 
     function PhoneUI() {
@@ -28,10 +28,12 @@ define([
 
         /* Load pages */
         var pageNews = new NewsView(pageHolder),
-            pageDetails = new NewsDetailView(pageHolder);
+            pageDetails = new NewsDetailView(pageHolder),
+            pageLogin = new LoginView(pageHolder);
 
         /* Add all the necessary pages to the page holder. */
         pageHolder.pages([
+            pageLogin.ui,
             pageNews.ui,
             pageDetails.ui
         ]);
@@ -52,6 +54,7 @@ define([
         this.pageNews = pageNews;
         this.pageHolder = pageHolder;
         this.pageDetails = pageDetails;
+        this.pageLogin = pageLogin;
 
         return this;
     }
