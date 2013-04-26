@@ -8,10 +8,15 @@ define([
         navigateTo : function (page) {
             if (page === 'details') {
                 this.view.pageHolder.currentPage(this.view.pageDetails.ui);
-            } else if (page === 'news' || page === 'main') {
+            } else if (page === 'news') {
                 this.view.pageHolder.currentPage(this.view.pageNews.ui);
             } else if (page === 'login') {
-                this.view.pageHolder.currentPage(this.view.pageLogin.ui);
+                this.view.masterPageHolder.currentPage(this.view.pageLogin.ui);
+            } else if (page === 'main') {
+                FeedsViewModel.loadFeeds(Utils.Fn.bind(function () {
+                    this.view.masterPageHolder.currentPage(this.view.phoneUi);
+                    Utils.Dom.applyChanges();
+                }, this));
             }
 
             Utils.Dom.applyChanges();

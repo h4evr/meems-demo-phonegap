@@ -158,10 +158,16 @@ define([
         },
 
         getNewsFromFeed: function (feed, onDone) {
+            var lastUpdate = window.localStorage["lastUpdate_" + feed._id] || "";
+            window.localStorage["lastUpdate_" + feed._id] = new Date();
+
             Utils.Ajax.request({
                 url: ServerConf.url + 'feeds/' + feed._id,
                 decoding: 'json',
                 method: "GET",
+                params: {
+                    "lastUpdate": lastUpdate
+                },
 
                 done: Utils.Fn.bind(function (resp) {
                     if (resp.statusCode === 200) {
@@ -254,8 +260,6 @@ define([
                     cb(true);
                 }
             });
-
-            this.loadFeeds();
         }
     };
 });

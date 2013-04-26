@@ -32,11 +32,19 @@ function getTheme() {
         return m[1];
     }
 
-    return null;
+    if (navigator.userAgent.match(/iPad|iPhone/i) != null) {
+        return "ios";
+    }
+
+    if (navigator.userAgent.match(/Android/i) != null) {
+        return "android";
+    }
+
+    return 'android';
 }
 
 var cssPath = "css/meems/";
-var theme = getTheme() || 'android';
+var theme = getTheme();
 loadCss([
     cssPath + theme + "/ui.css",
     cssPath + theme + "/icons.css",

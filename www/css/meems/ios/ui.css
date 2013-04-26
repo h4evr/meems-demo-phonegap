@@ -4,6 +4,7 @@
 
 .ui-hide {
     visibility: hidden;
+    z-index: -999;
 }
 
 .ui-show-layout {

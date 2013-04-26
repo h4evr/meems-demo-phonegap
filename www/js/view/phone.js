@@ -8,6 +8,8 @@ define([
         /* The title of the aside panel */
         var title = Obs.observable("RSS Reader"),
 
+            masterPageHolder = UI.create("pageholder"),
+
         /* Our main component is an aside menu */
             phoneUi = UI.create("aside"),
 
@@ -29,11 +31,10 @@ define([
         /* Load pages */
         var pageNews = new NewsView(pageHolder),
             pageDetails = new NewsDetailView(pageHolder),
-            pageLogin = new LoginView(pageHolder);
+            pageLogin = new LoginView();
 
         /* Add all the necessary pages to the page holder. */
         pageHolder.pages([
-            pageLogin.ui,
             pageNews.ui,
             pageDetails.ui
         ]);
@@ -48,10 +49,17 @@ define([
             Utils.Dom.applyChanges();
         });
 
-        this.ui = phoneUi;
+        masterPageHolder.pages([
+            pageLogin.ui,
+            phoneUi
+        ]);
+
+        this.ui = masterPageHolder;
         this.title = title;
+        this.phoneUi = phoneUi;
         this.pageFeeds = pageFeeds;
         this.pageNews = pageNews;
+        this.masterPageHolder = masterPageHolder;
         this.pageHolder = pageHolder;
         this.pageDetails = pageDetails;
         this.pageLogin = pageLogin;

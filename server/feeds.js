@@ -173,7 +173,8 @@ exports.removeAll = function (req, res) {
 
 exports.getFeedNews = function (req, res) {
     var email = req.session.email,
-        id = req.params.id;
+        id = req.params.id,
+        lastUpdate = req.query.lastUpdate || null;
 
     db.collection('feeds', function (err, collection) {
         if (!err) {
@@ -181,7 +182,7 @@ exports.getFeedNews = function (req, res) {
                 if (err || !feed) {
                     res.send(500, err);
                 } else {
-                    updateFeed(feed, function (err, update, news)  {
+                    updateFeed(feed, lastUpdate, function (err, update, news)  {
                         if (err) {
                             res.send(500, err);
                             return;
@@ -231,12 +232,17 @@ var getFeedMeta = function (url, cb) {
     });
 };
 
-var updateFeed = function (feed, cb) {
+var updateFeed = function (feed, lastUpdate, cb) {
     var req = {
         uri: feed.url
     };
 
-    if ("lastModifiedDate" in feed) {
+    if (lastUpdate) {
+        req.headers = req.headers || {};
+        req.headers['If-Modified-Since'] = new Date(lastUpdate);
+    }
+
+    /*if ("lastModifiedDate" in feed) {
         req.headers = req.headers || {};
         req.headers['If-Modified-Since'] = feed.lastModifiedDate;
     }
@@ -244,7 +250,7 @@ var updateFeed = function (feed, cb) {
     if ("lastETag" in feed) {
         req.headers = req.headers || {};
         req.headers['If-None-Match'] = feed.lastETag;
-    }
+    }*/
 
     var update = false;
 
