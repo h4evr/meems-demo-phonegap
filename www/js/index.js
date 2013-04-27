@@ -43,30 +43,42 @@ function getTheme() {
     return 'android';
 }
 
-var cssPath = "css/meems/";
-var theme = getTheme();
-loadCss([
-    cssPath + theme + "/ui.css",
-    cssPath + theme + "/icons.css",
-    cssPath + theme + "/effects.css"
-]);
+window.hasPhoneGap = document.URL.indexOf( 'http://' ) === -1 && document.URL.indexOf( 'https://' ) === -1;
 
-require([
-    "meems",
-    /* Views */
-    "view/phone",
-    /* ViewModels */
-    "viewmodel/phone"],
-function (Meems, PhoneUI, PhoneViewModel) {
-    "use strict";
 
-    var Utils = Meems.Utils, Scroll = Meems.Scroll, Events = Meems.Events;
 
-    var phoneUi = new PhoneUI();
-    PhoneViewModel.init(phoneUi);
-    phoneUi.refresh();
+function init() {
+    var cssPath = "css/meems/";
+    var theme = getTheme();
+    loadCss([
+        cssPath + theme + "/ui.css",
+        cssPath + theme + "/icons.css",
+        cssPath + theme + "/effects.css"
+    ]);
 
-    Events.Dom.on(window, 'resize', Utils.Fn.throttle(Scroll.updateAll, 100));
-    document.body.appendChild(phoneUi.ui.el());
-    Scroll.updateAll();
-});
+    require([
+        "meems",
+        /* Views */
+        "view/phone",
+        /* ViewModels */
+        "viewmodel/phone"],
+    function (Meems, PhoneUI, PhoneViewModel) {
+        "use strict";
+
+        var Utils = Meems.Utils, Scroll = Meems.Scroll, Events = Meems.Events;
+
+        var phoneUi = new PhoneUI();
+        PhoneViewModel.init(phoneUi);
+        phoneUi.refresh();
+
+        Events.Dom.on(window, 'resize', Utils.Fn.throttle(Scroll.updateAll, 100));
+        document.body.appendChild(phoneUi.ui.el());
+        Scroll.updateAll();
+    });
+}
+
+if (hasPhoneGap) {
+    document.addEventListener('deviceready', init, false);
+} else {
+    init();
+}
