@@ -4,7 +4,6 @@
 
 .ui-hide {
     visibility: hidden;
-    z-index: -999;
 }
 
 .ui-show-layout {
@@ -823,4 +822,51 @@
     background: #F6F6F6;
     box-shadow: 0 4px 0 -2px #F1F1F1 inset, 0 2em 2em -2em #AAA inset, 0 0 2px rgba(0, 0, 0, .5);
     border-radius: 12px;
+}
+
+.ui-popup-menu ul {
+    margin: 0;
+    padding: 0;
+}
+
+.ui-popup-menu {
+    margin-top: 10px;
+    position: absolute;
+    z-index: 999;
+    padding: 0 5px;
+    background: #4C566C; /* Old browsers */
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
+}
+
+.ui-popup-menu:after {
+    content: " ";
+    width: 0px;
+    height: 0px;
+    border: 10px solid;
+    border-color: transparent #4C566C transparent transparent;
+    position:absolute;
+    top: -20px;
+    left: 50%;
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+
+.ui-popup-menu .ui-popup-item {
+    background-color: #FFFFFF;
+    border: 1px solid #D9D9D9;
+    color: #222222;
+    display: block;
+    font-size: 17px;
+    font-weight: bold;
+    padding: 12px 10px;
+    text-decoration: none;
+    margin-top: 5px;
+    margin-bottom: 5px;
+
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    border-radius: 8px;
 }

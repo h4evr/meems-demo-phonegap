@@ -159,7 +159,7 @@ define([
 
         processSingleNewsItem : function (item) {
             item.formattedDate = formatDate(new Date(item.date));
-            item.summary = item.summary.replace(/<iframe.*?<\/iframe>/g, "").replace(/<img.*?<\/img>/g, "");
+            item.summary = item.summary.replace(/<iframe.*?<\/iframe>/g, "").replace(/<img.*?>/g, "").replace(/<\/img>/g, "");
         },
 
         getNewsFromFeed: function (feed, onDone) {
