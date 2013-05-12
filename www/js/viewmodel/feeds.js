@@ -157,6 +157,11 @@ define([
             this.tempFeeds([]);
         },
 
+        processSingleNewsItem : function (item) {
+            item.formattedDate = formatDate(new Date(item.date));
+            item.summary = item.summary.replace(/<iframe.*?<\/iframe>/g, "").replace(/<img.*?<\/img>/g, "");
+        },
+
         getNewsFromFeed: function (feed, onDone) {
             var lastUpdate = window.localStorage["lastUpdate_" + feed._id] || "";
             window.localStorage["lastUpdate_" + feed._id] = new Date();
@@ -174,7 +179,7 @@ define([
                         var news = resp.response.news;
 
                         for (var i = 0, len = news.length; i < len; ++i) {
-                            news[i].formattedDate = formatDate(new Date(news[i].date));
+                            this.processSingleNewsItem(news[i]);
                         }
 
                         onDone(resp.response);
