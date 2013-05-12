@@ -57,8 +57,9 @@
     clear: both;
 }
 
-.news .summary img {
-    max-width: 80%;
+.news .summary img, .news .summary .has-media, .news .summary iframe {
+    /*max-width: 80%;*/
+    display: none;
 }
 
 .news .summary br {

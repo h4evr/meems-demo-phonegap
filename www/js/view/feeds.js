@@ -60,6 +60,7 @@ define(["meems"], function(Meems) {
                     }
                 })),
 
+            btnRefreshIcon = Obs.observable("refresh"),
             pageHolder = UI.create("pageholder", parentView),
             pageFeeds =
             UI.create("page", pageHolder)
@@ -77,6 +78,18 @@ define(["meems"], function(Meems) {
                                         pageFeeds.fire("feeds:manage");
                                         pageHolder.currentPage(pageManageFeeds);
                                         Utils.Dom.applyChanges();
+                                    }))
+                                .addButton(UI.create("button")
+                                    .attr("title", "Refresh")
+                                    .attr("icon", btnRefreshIcon)
+                                    .on('dom:' + Events.Touch.touchEndEventName, function () {
+                                        btnRefreshIcon("loading");
+                                        Utils.Dom.applyChanges();
+
+                                        pageFeeds.fire("feeds:refresh", function () {
+                                            btnRefreshIcon("refresh");
+                                            Utils.Dom.applyChanges();
+                                        });
                                     }))))
 
                 /* Create the page's content */

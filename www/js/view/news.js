@@ -37,6 +37,7 @@ define(["meems"], function(Meems) {
                         .items(news)
                         .template(itemTemplate)
                         .attr('style', 'normal')
+                        .attr('empty', '<b>No news.</b><br><br>Please select a feed from the menu.')
                         .attr('sortable', false)
                         .on("item:clicked", function (eventName, item) {
                             pageNews.fire("news:clicked", item);

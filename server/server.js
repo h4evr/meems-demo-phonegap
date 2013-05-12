@@ -132,6 +132,10 @@ app.delete("/feeds", user.protect(feeds.removeAll));
  */
 app.get("/feeds/:id", user.protect(feeds.getFeedNews));
 
+app.get('/', function (req, res) {
+    res.send(200, { msg: "Welcome to RSS Reader server" });
+    req.next();
+});
 
 app.listen(9999);
 console.log("Listening on port 9999...");

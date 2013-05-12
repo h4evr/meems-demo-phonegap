@@ -1,4 +1,4 @@
 define({
     url: "http://rssreaderserver.eu01.aws.af.cm/"
-    //url: "http://localhost:9999/"
+    //url: "http://192.168.1.68:9999/"
 });

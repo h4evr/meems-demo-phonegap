@@ -187,6 +187,40 @@ define([
             });
         },
 
+        refreshFeeds: function (onDone) {
+            var self = this;
+            var feeds = this.feeds();
+
+            var refreshFeed = function (feed, i) {
+                console.log("Synching " + feed.url);
+                self.getNewsFromFeed(feed, function (resp) {
+                    var feedCache = self.newsCache[resp.feed.url];
+
+                    if (!feedCache) {
+                        feedCache = self.newsCache[resp.feed.url] = {
+                            title: resp.feed.name,
+                            news: resp.news,
+                            lastUpdateDate: new Date()
+                        };
+                    } else {
+                        feedCache.news.unshift.apply(feedCache.news, resp.news);
+                    }
+
+                    window.localStorage.setItem("newsCache", JSON.stringify(self.newsCache));
+
+                    if (i + 1 < feeds.length) {
+                        Utils.Fn.postPone(function () { refreshFeed(feeds[i + 1], i + 1); });
+                    } else {
+                        onDone();
+                    }
+                });
+            };
+
+            if (feeds.length > 0) {
+                refreshFeed(feeds[0], 0);
+            }
+        },
+
         parentController: null,
         view: null,
         init: function (parentController, view) {
@@ -211,26 +245,7 @@ define([
                 if (cache && cache.news && cache.news.length > 0 &&
                     cache.lastUpdateDate && (new Date(cache.lastUpdateDate)).getTime() - (new Date()).getTime() < 300000 /*5min*/) {
                     NewsViewModel.showNews(feed, cache.news);
-                } else {
-                    self.getNewsFromFeed(feed, function (resp) {
-                        var feedCache = self.newsCache[resp.feed.url];
-
-                        if (!feedCache) {
-                            feedCache = self.newsCache[resp.feed.url] = {
-                                title: resp.feed.name,
-                                news: resp.news,
-                                lastUpdateDate: new Date()
-                            };
-                        } else {
-                            feedCache.news.unshift.apply(feedCache.news, resp.news);
-                        }
-
-                        window.localStorage.setItem("newsCache", JSON.stringify(self.newsCache));
-
-                        NewsViewModel.showNews(resp.feed, feedCache.news);
-
-                        self.parentController.updateUi();
-                    });
+                    self.parentController.updateUi();
                 }
 
                 self.parentController.navigateTo("news");
@@ -259,6 +274,12 @@ define([
                 if (cb) {
                     cb(true);
                 }
+            }).on("feeds:refresh", function (eventName, cb) {
+                self.refreshFeeds(function () {
+                    if (cb) {
+                        cb();
+                    }
+                });
             });
         }
     };
