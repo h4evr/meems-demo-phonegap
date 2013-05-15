@@ -1,6 +1,8 @@
 html,body{
     height: 100%;
     overflow: hidden;
+    margin: 0;
+    padding: 0;
 }
 
 .ui-show {
@@ -504,6 +506,7 @@ html,body{
 }
 
 .ui-page-holder {
+    height: 100%;
     overflow: hidden;
     background: #000000;
     background: -moz-linear-gradient(top, #000000 1%, #272d33 100%);

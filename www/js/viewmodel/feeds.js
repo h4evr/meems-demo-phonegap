@@ -158,8 +158,13 @@ define([
         },
 
         processSingleNewsItem : function (item) {
-            item.formattedDate = formatDate(new Date(item.date));
-            item.summary = item.summary.replace(/<iframe.*?<\/iframe>/g, "").replace(/<img.*?>/g, "").replace(/<\/img>/g, "");
+            return {
+                formattedDate: formatDate(new Date(item.date)),
+                summary: item.summary.replace(/<iframe.*?<\/iframe>|<img.*?>|<\/img>|<a .*?>|<\/a>/g, ""),
+                author: item.author,
+                title: item.title,
+                link: item.link
+            }
         },
 
         getNewsFromFeed: function (feed, onDone) {
@@ -179,7 +184,7 @@ define([
                         var news = resp.response.news;
 
                         for (var i = 0, len = news.length; i < len; ++i) {
-                            this.processSingleNewsItem(news[i]);
+                            news[i] = this.processSingleNewsItem(news[i]);
                         }
 
                         onDone(resp.response);
@@ -202,7 +207,7 @@ define([
                     var feedCache = self.newsCache[resp.feed.url];
 
                     if (!feedCache) {
-                        feedCache = self.newsCache[resp.feed.url] = {
+                        self.newsCache[resp.feed.url] = {
                             title: resp.feed.name,
                             news: resp.news,
                             lastUpdateDate: new Date()
