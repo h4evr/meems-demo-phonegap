@@ -52,6 +52,10 @@ function init() {
         Events.Dom.on(window, 'resize', Utils.Fn.throttle(Scroll.updateAll, 100));
         document.body.appendChild(phoneUi.ui.el());
         Scroll.updateAll();
+
+        if (hasPhoneGap && navigator.splashscreen && navigator.splashscreen.hide) {
+            navigator.splashscreen.hide();
+        }
     });
 }
 
