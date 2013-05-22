@@ -4,6 +4,7 @@
 
 .ui-hide {
     visibility: hidden;
+    z-index: -999;
 }
 
 .ui-show-layout {
@@ -211,7 +212,7 @@
     margin-right: 5px;
 }
 
-.ui-button-vertical {
+.ui-footer .ui-button, .ui-button-vertical {
     cursor: pointer;
     height: 38px;
     line-height: 12px;
@@ -236,20 +237,24 @@
     opacity: 1;
 }
 
-.ui-button-vertical > .ui-icon {
+.ui-footer .ui-button > .ui-icon, .ui-button-vertical > .ui-icon {
     height: 25px;
     width: 27px;
     margin: 2px auto;
-    margin-top: 2px;
+    display: block;
 }
 
-.ui-button-vertical > .ui-no-icon {
+.ui-footer .ui-button > .ui-no-icon, .ui-button-vertical > .ui-no-icon {
     display: none;
 }
 
-.ui-button-vertical > .ui-title {
+.ui-footer .ui-button > .ui-title, .ui-button-vertical > .ui-title {
     margin-left: 5px;
     margin-right: 5px;
+}
+
+.ui-footer .ui-button > .ui-title {
+    float: none;
 }
 
 .ui-button-vertical.ui-selected {
@@ -267,7 +272,7 @@
 
 .ui-header > .ui-button-group > .ui-button > .ui-icon,
 .ui-header > .ui-button-group > .ui-button-normal > .ui-icon,
-.ui-header > .ui-button-group > .ui-button-vertical > .ui-icon{
+.ui-header > .ui-button-group > .ui-button-vertical > .ui-icon {
     display: none;
 }
 

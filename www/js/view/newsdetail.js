@@ -20,9 +20,19 @@ define([ "meems" ], function(Meems) {
                                 .addButton(UI.create("button")
                                     .attr("title", "News")
                                     .attr("icon", "explore")
-                                    .on('dom:' + Events.Touch.touchEndEventName, function () {
-                                        parentView.fire("goto:news");
-                                    }))))
+                                    .attr("action", "news"))
+                                .on("button:pressed", function (eventName, btn) {
+                                    switch(btn.attr('action')) {
+                                        case 'news':
+                                            // Unload frame
+                                            news({
+                                                link: "about:blank"
+                                            });
+
+                                            parentView.fire("goto:news");
+                                            break;
+                                    }
+                                })))
 
                         /* Create the page's content */
                         .facet("content",

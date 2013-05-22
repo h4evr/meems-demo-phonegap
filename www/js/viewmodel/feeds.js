@@ -26,6 +26,15 @@ define([
                          .replace("h", h.toString()).replace("m", m.toString()).replace("s", s.toString());
     };
 
+    var parseDate = function (txt) {
+        var nFDate = txt.replace("T", " ").replace(/\.\d\d\dZ/, "").replace(/\-/g, "/");
+        return new Date(nFDate);
+    };
+
+    var stripTags = function (txt) {
+        return txt.replace(/<[^>]+>/g, "");//.replace(/<iframe.*?<\/iframe>|<img.*?>|<\/img>|<a .*?>|<\/a>/g, "");
+    };
+
     return  {
         feeds: null,
         tempFeeds: null,
@@ -159,8 +168,8 @@ define([
 
         processSingleNewsItem : function (item) {
             return {
-                formattedDate: formatDate(new Date(item.date)),
-                summary: item.summary.replace(/<iframe.*?<\/iframe>|<img.*?>|<\/img>|<a .*?>|<\/a>/g, ""),
+                formattedDate: formatDate(parseDate(item.date)),
+                summary: stripTags(item.summary),
                 author: item.author,
                 title: item.title,
                 link: item.link
@@ -169,7 +178,7 @@ define([
 
         getNewsFromFeed: function (feed, onDone) {
             var lastUpdate = window.localStorage["lastUpdate_" + feed._id] || "";
-            window.localStorage["lastUpdate_" + feed._id] = new Date();
+            window.localStorage["lastUpdate_" + feed._id] = (new Date()).getTime();
 
             Utils.Ajax.request({
                 url: ServerConf.url + 'feeds/' + feed._id,
@@ -210,7 +219,7 @@ define([
                         self.newsCache[resp.feed.url] = {
                             title: resp.feed.name,
                             news: resp.news,
-                            lastUpdateDate: new Date()
+                            lastUpdateDate: (new Date()).getTime()
                         };
                     } else {
                         feedCache.news.unshift.apply(feedCache.news, resp.news);
@@ -253,7 +262,7 @@ define([
                 var cache = self.newsCache[feed.url];
 
                 if (cache && cache.news && cache.news.length > 0 &&
-                    cache.lastUpdateDate && (new Date(cache.lastUpdateDate)).getTime() - (new Date()).getTime() < 300000 /*5min*/) {
+                    cache.lastUpdateDate && cache.lastUpdateDate - (new Date()).getTime() < 300000 /*5min*/) {
                     NewsViewModel.showNews(feed, cache.news);
                     self.parentController.updateUi();
                 }

@@ -257,7 +257,7 @@ var updateFeed = function (feed, lastUpdate, cb) {
     feedparser.parseUrl(req)
         .on('response', function (response) {
             if (response.statusCode === 200) {
-                feed.lastModifiedDate = response.headers['last-modified'];
+                feed.lastModifiedDate = (new Date(response.headers['last-modified'])).getTime();
                 feed.lastETag = response.headers['etag'];
                 update = true;
             } else {

@@ -23,39 +23,9 @@ function loadCss(urls) {
     }
 }
 
-function getTheme() {
-    "use strict";
-
-    var m;
-
-    if ((m = /theme=(\w+)/.exec(window.location.search))) {
-        return m[1];
-    }
-
-    if (navigator.userAgent.match(/iPad|iPhone/i) != null) {
-        return "ios";
-    }
-
-    if (navigator.userAgent.match(/Android/i) != null) {
-        return "android";
-    }
-
-    return 'android';
-}
-
 window.hasPhoneGap = document.URL.indexOf( 'http://' ) === -1 && document.URL.indexOf( 'https://' ) === -1;
 
-
-
 function init() {
-    var cssPath = "css/meems/";
-    var theme = getTheme();
-    loadCss([
-        cssPath + theme + "/ui.css",
-        cssPath + theme + "/icons.css",
-        cssPath + theme + "/effects.css"
-    ]);
-
     require([
         "meems",
         /* Views */
@@ -64,8 +34,16 @@ function init() {
         "viewmodel/phone"],
     function (Meems, PhoneUI, PhoneViewModel) {
         "use strict";
-
         var Utils = Meems.Utils, Scroll = Meems.Scroll, Events = Meems.Events;
+
+        var cssPath = "css/meems/";
+        var theme = Utils.Dom.userAgent();
+
+        loadCss([
+            cssPath + theme + "/ui.css",
+            cssPath + theme + "/icons.css",
+            cssPath + theme + "/effects.css"
+        ]);
 
         var phoneUi = new PhoneUI();
         PhoneViewModel.init(phoneUi);

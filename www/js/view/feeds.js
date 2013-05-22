@@ -5,7 +5,7 @@ define(["meems"], function(Meems) {
         var itemTemplate =
             "<div class=\"feed\">" +
                 "<div class=\"icon\">" +
-                    "<img src=\"{{icon}}\">" +
+                    "{{#icon}}<img src=\"{{icon}}\">{{/icon}}" +
                 "</div>" +
                 "<div class=\"name\">{{name}}</div>" +
                 "<div class=\"summary\">{{summary}}</div>" +
@@ -74,23 +74,30 @@ define(["meems"], function(Meems) {
                                 .addButton(UI.create("button")
                                     .attr("title", "Manage")
                                     .attr("icon", "add")
-                                    .on('dom:' + Events.Touch.touchEndEventName, function () {
-                                        pageFeeds.fire("feeds:manage");
-                                        pageHolder.currentPage(pageManageFeeds);
-                                        Utils.Dom.applyChanges();
-                                    }))
+                                    .attr("action", "manage"))
                                 .addButton(UI.create("button")
                                     .attr("title", "Refresh")
                                     .attr("icon", btnRefreshIcon)
-                                    .on('dom:' + Events.Touch.touchEndEventName, function () {
-                                        btnRefreshIcon("loading");
-                                        Utils.Dom.applyChanges();
-
-                                        pageFeeds.fire("feeds:refresh", function () {
-                                            btnRefreshIcon("refresh");
+                                    .attr("action", "refresh"))
+                                .on("button:pressed", function (eventName, btn) {
+                                    switch (btn.attr('action')) {
+                                        case 'manage':
+                                            pageFeeds.fire("feeds:manage");
+                                            pageHolder.currentPage(pageManageFeeds);
                                             Utils.Dom.applyChanges();
-                                        });
-                                    }))))
+                                            break;
+                                        case 'refresh':
+                                            btnRefreshIcon("loading");
+                                            Utils.Dom.applyChanges();
+
+                                            pageFeeds.fire("feeds:refresh", function () {
+                                                btnRefreshIcon("refresh");
+                                                Utils.Dom.applyChanges();
+                                            });
+                                            break;
+                                    }
+
+                                })))
 
                 /* Create the page's content */
                 .facet("content",
@@ -122,27 +129,37 @@ define(["meems"], function(Meems) {
                                 .addButton(UI.create("button")
                                     .attr("title", "Back")
                                     .attr("icon", "back")
-                                    .on('dom:' + Events.Touch.touchEndEventName, function () {
-                                        pageManageFeeds.fire("feeds:cancel", function (goBack) {
-                                            if (goBack) {
-                                                pageHolder.currentPage(pageFeeds);
-                                                Utils.Dom.applyChanges();
-                                            }
-                                        });
-                                    })))
+                                    .attr("action", "back"))
+                                .on("button:pressed", function (eventName, btn) {
+                                    switch (btn.attr('action')) {
+                                        case 'back':
+                                            pageManageFeeds.fire("feeds:cancel", function (goBack) {
+                                                if (goBack) {
+                                                    pageHolder.currentPage(pageFeeds);
+                                                    Utils.Dom.applyChanges();
+                                                }
+                                            });
+                                            break;
+                                    }
+                                }))
                         .facet("buttonsright",
                             UI.create("buttongroup")
                                 .addButton(UI.create("button")
                                     .attr("title", "Save")
                                     .attr("icon", "save")
-                                    .on('dom:' + Events.Touch.touchEndEventName, function () {
-                                        pageManageFeeds.fire("feeds:save", function (goBack) {
-                                            if (goBack) {
-                                                pageHolder.currentPage(pageFeeds);
-                                                Utils.Dom.applyChanges();
-                                            }
-                                        });
-                                    }))))
+                                    .attr("action", "save"))
+                                .on("button:pressed", function (eventName, btn) {
+                                    switch (btn.attr('action')) {
+                                        case 'save':
+                                            pageManageFeeds.fire("feeds:save", function (goBack) {
+                                                if (goBack) {
+                                                    pageHolder.currentPage(pageFeeds);
+                                                    Utils.Dom.applyChanges();
+                                                }
+                                            });
+                                            break;
+                                    }
+                                })))
                  /* Create the page's content */
                 .facet("content",
                     UI.create("group")
